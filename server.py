@@ -104,11 +104,24 @@ async def health_route(request):
     return JSONResponse({"status": "ok", "service": "browser-use-remote-mcp"})
 
 
-mcp.settings.streamable_http_path = "/"
+# FastMCP 2.14 removed the deprecated streamable_http_app() API.
+# http_app() is the supported ASGI integration and carries its own lifespan.
+mcp_app = mcp.http_app(path="/", stateless_http=True, json_response=True)
+
 app = Starlette(
     routes=[
         Route("/health", health_route),
-        Mount(f"/mcp/{PATH_TOKEN}", app=mcp.streamable_http_app()),
+        Mount(f"/mcp/{PATH_TOKEN}", app=mcp_app),
     ],
-    lifespan=lambda app: mcp.session_manager.run(),
+    lifespan=mcp_app.lifespan,
 )
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", "10000")),
+    )
