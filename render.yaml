@@ -9,5 +9,5 @@ services:
     envVars:
       - key: BROWSER_USE_API_KEY
         sync: false
-      - key: MCP_API_TOKEN
-        generateValue: true
+      - key: MCP_PATH_TOKEN
+        sync: false
